@@ -1,12 +1,57 @@
-#include <GL/glew.h>
-#include <GL/glext.h>
 #include <stdio.h>
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 
 #include "tri.frag.h"
 #include "tri.vert.h"
 
 #define WINDOW_TITLE "OPENGL TIME"
+
+
+void check_shader_error(GLuint shader) {
+	int  success;
+	char infoLog[512];
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+
+	if(!success) {
+		glGetShaderInfoLog(shader, 512, NULL, infoLog);
+		fprintf(stderr, "Shader compilation error: %s", infoLog);
+	}
+}
+
+void chech_program_error(GLuint prog) {
+	int  success;
+	char infoLog[512];
+	glGetProgramiv(prog, GL_LINK_STATUS, &success);
+	if(!success) {
+		glGetProgramInfoLog(prog, 512, NULL, infoLog);
+		fprintf(stderr, "Shader program error: %s", infoLog);
+	}
+}
+
+GLuint compile_shader_program(const char *vert_src, const char *frag_src) {
+	GLuint vert = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vert, 1, &vert_src,NULL);
+	glCompileShader(vert);
+
+	check_shader_error(vert);
+
+	GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(frag, 1, &frag_src, NULL);
+	glCompileShader(frag);
+
+	check_shader_error(frag);
+
+	GLuint program = glCreateProgram();
+	glAttachShader(program, vert);
+	glAttachShader(program, frag);
+	glLinkProgram(program);
+
+	chech_program_error(program);
+
+	return program;
+}
 
 int main(void) {
 	if (!glfwInit()) {
@@ -32,22 +77,43 @@ int main(void) {
 		fprintf(stderr,"Opengl 4.1 not suooported");
 	}
 
+	GLuint shader = compile_shader_program(SHADER_TRI_VERT, SHADER_TRI_FRAG);
 
 	float vertices[] = {
 		-1.0,-1.0,+0.0,
 		+1.0,-1.0,+0.0,
-#include <GL/gl>
 		+0.0,+1.0,+0.0,
+	//
+	// -0.5f, -0.5f, 0.0f,
+	// 0.5f, -0.5f, 0.0f,
+	// 0.0f,  0.5f, 0.0f
 	};
+
+	GLuint vao; 
+	glGenVertexArrays(1, &vao);
+
+	glBindVertexArray(vao);
+
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	printf("%s", SHADER_TRI_VERT);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glUseProgram(shader);
+
+
+
+
 	while (!glfwWindowShouldClose(window)) {
 		glClearColor(1.0, 1.0, 0.5,0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shader);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
