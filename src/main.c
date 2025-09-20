@@ -9,6 +9,7 @@
 #define WINDOW_TITLE "OPENGL TIME"
 
 
+
 void check_shader_error(GLuint shader) {
 	int  success;
 	char infoLog[512];
@@ -68,6 +69,7 @@ int main(void) {
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+
 	GLenum err = glewInit();
 	if (GLEW_OK != err) {
 		/* Problem: glewInit failed, something is seriously wrong. */
@@ -108,6 +110,10 @@ int main(void) {
 
 
 	while (!glfwWindowShouldClose(window)) {
+		glfwPollEvents();
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glViewport(0, 0, width, height);
 		glClearColor(1.0, 1.0, 0.5,0.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -116,7 +122,6 @@ int main(void) {
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
 	}
 
 	glfwTerminate();
