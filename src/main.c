@@ -1,3 +1,4 @@
+#include <cglm/cglm.h>
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -6,8 +7,9 @@
 #include "tri.frag.h"
 #include "tri.vert.h"
 
-#define WINDOW_TITLE "OPENGL TIME"
+#include "model.h"
 
+#define WINDOW_TITLE "OPENGL TIME"
 
 
 void check_shader_error(GLuint shader) {
@@ -85,10 +87,6 @@ int main(void) {
 		-1.0,-1.0,+0.0,
 		+1.0,-1.0,+0.0,
 		+0.0,+1.0,+0.0,
-	//
-	// -0.5f, -0.5f, 0.0f,
-	// 0.5f, -0.5f, 0.0f,
-	// 0.0f,  0.5f, 0.0f
 	};
 
 	GLuint vao; 

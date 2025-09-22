@@ -2,6 +2,7 @@ project('opengl-time', 'c')
 cc = meson.get_compiler('c')
 
 incl = files()
+subdir('include')
 subdir('src')
 
 deps = []
@@ -10,9 +11,8 @@ deps += dependency('glfw3')
 deps += dependency('opengl')
 deps += dependency('glew')
 
-
 add_global_arguments('-DWall', language : 'c')
 add_global_arguments('-DWerror', language : 'c')
 
 
-executable('opengl-time', sources + incl, dependencies: deps)
+executable('opengl-time', sources + incl, dependencies: deps, include_directories: inc_dir)
