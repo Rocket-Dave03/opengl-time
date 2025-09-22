@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
+
 
 
 void parse_vec3(char *line, vec3 *out) {
@@ -15,9 +18,18 @@ void parse_vec2(char *line, vec2 *out) {
 	sscanf(line, " %f %f\n", (float *)out + 0, (float *)out + 1);
 }
 
-unsigned int find_end_of_line(char *str) {
-	// TODO
+void parse_line(struct Model *m, char *line, unsigned long len) {
+	printf("parsing line: '%*s'", (int)len, line);
 }
+
+long find_end_of_line(char *str, unsigned long max_len) {
+	unsigned long idx = 0;
+	while (str[idx] != '\n') {idx++;};
+	if (idx == max_len-1 || idx >= max_len - 1) {return -1;};
+	// printf("line len = %lu\t", idx);
+	return idx;
+}
+
 
 struct Model *model_load_from_file(char *filepath) {
 	FILE *f = fopen(filepath, "r");
@@ -44,21 +56,40 @@ struct Model *model_load_from_file(char *filepath) {
 
 
 	{
-		const int buf_size = 1024;
-		char buff[buf_size];
-		memset(buff, 0,  buf_size);
-		unsigned int start_idx = 0;
-		unsigned int read_idx = 0;
-		while (!feof(f)) {
-			int c = fread(buff+start_idx, 1, buf_size - 1 - start_idx, f);
-			read_idx = 0;
+		const int buf_size = 1023;
+		char buff[buf_size+1];
+		memset(buff, 0,  buf_size+1);
+		unsigned long start_idx = 0;
+		bool reading = true;
+		while (reading) {
+			int c = fread(buff+start_idx, 1, buf_size - start_idx, f);
+			bool last = feof(f);
 			int e = ferror(f);
+			c += start_idx;
+			start_idx = 0;
 			if (e) {
 				fprintf(stderr, "Error, unable to read from file: %d", e);
 				goto exit_model_free;
 			}
 			buff[c] = 0; // NULL Terminator
-			//
+			// printf("%*s", c, buff);
+			for(int o = 0; o < c && reading; o += find_end_of_line(buff+o, c-o)+1) {
+				long len = find_end_of_line(buff+o, c-o);
+				if (len == -1) {
+					len = c - o - 1;
+
+					start_idx = buf_size-o;
+					// printf("Moving %4ld bytes '%.*s' to start\n", start_idx, (int)start_idx, buff+o);
+					memmove(buff, buff + o, start_idx);
+					if (last) {
+						reading = false;
+						goto proc_line;
+					}
+					break;
+				};
+			proc_line:
+				printf("%.*s\n", (int)len, buff+o);
+			}
 		}
 	}
 
