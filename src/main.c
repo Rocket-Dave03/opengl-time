@@ -1,4 +1,5 @@
 #include <cglm/cglm.h>
+#include <cglm/types.h>
 #include <stdio.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -83,11 +84,17 @@ int main(void) {
 
 	GLuint shader = compile_shader_program(SHADER_TRI_VERT, SHADER_TRI_FRAG);
 
-	float vertices[] = {
-		-1.0,-1.0,+0.0,
-		+1.0,-1.0,+0.0,
-		+0.0,+1.0,+0.0,
-	};
+	struct Model *m = model_load_from_file("./models/v1.obj");
+
+	// model_free(m);
+
+	float *vertices = (float *)m->verts;	
+
+	// float vertices[] = {
+	// 	-1.0,-1.0,+0.0,
+	// 	+1.0,-1.0,+0.0,
+	// 	+0.0,+1.0,+0.0,
+	// };
 
 	GLuint vao; 
 	glGenVertexArrays(1, &vao);
@@ -97,7 +104,7 @@ int main(void) {
 	GLuint vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * m->vert_count, vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -117,7 +124,7 @@ int main(void) {
 
 		glUseProgram(shader);
 		glBindVertexArray(vao);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, m->vert_count);
 
 		glfwSwapBuffers(window);
 	}
