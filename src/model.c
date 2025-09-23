@@ -24,7 +24,7 @@ void parse_line(struct Model *m, char *line, unsigned long len) {
 
 long find_end_of_line(char *str, unsigned long max_len) {
 	unsigned long idx = 0;
-	while (str[idx] != '\n') {idx++;};
+	while (str[idx] != '\n' && idx < max_len) {idx++;};
 	if (idx == max_len-1 || idx >= max_len - 1) {return -1;};
 	// printf("line len = %lu\t", idx);
 	return idx;
