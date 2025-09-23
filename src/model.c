@@ -31,6 +31,8 @@ long find_end_of_line(char *str, unsigned long max_len) {
 }
 
 
+
+
 struct Model *model_load_from_file(char *filepath) {
 	FILE *f = fopen(filepath, "r");
 	if (f == NULL) {
@@ -54,6 +56,10 @@ struct Model *model_load_from_file(char *filepath) {
 	}
 	memcpy(model->filename, filepath, filepath_len);
 
+	// TODO: Figure out how many to allocate
+	model->verts = malloc(sizeof(vec3) * 5000);
+	model->vert_normal_coords = malloc(sizeof(vec3) * 5000);
+	model->tex_coords = malloc(sizeof(vec2) * 5000);
 
 	{
 		const int buf_size = 1023;
@@ -61,6 +67,7 @@ struct Model *model_load_from_file(char *filepath) {
 		memset(buff, 0,  buf_size+1);
 		unsigned long start_idx = 0;
 		bool reading = true;
+		char *line;
 		while (reading) {
 			int c = fread(buff+start_idx, 1, buf_size - start_idx, f);
 			bool last = feof(f);
@@ -88,10 +95,24 @@ struct Model *model_load_from_file(char *filepath) {
 					break;
 				};
 			proc_line:
-				printf("%.*s\n", (int)len, buff+o);
+				// printf("%.*s\n", (int)len, buff+o);
+				line = buff+o;
+				if (line[0] == 'v') {
+					if (line[1] == ' ') {
+						parse_vec3(line+1,&model->verts[model->vert_count]);
+						model->vert_count++;
+					} else if (line[1] == 'n') {
+						parse_vec3(line+2,&model->vert_normal_coords[model->vert_count]);
+						model->vert_normal_count++;
+					} else if (line[1] == 't') {
+						parse_vec2(line+2,&model->tex_coords[model->vert_count]);
+						model->tex_coord_count++;
+					}
+				}
 			}
 		}
 	}
+	return model;
 
 exit_model_free:
 	model_free(model);
