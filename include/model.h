@@ -8,7 +8,7 @@ struct Model {
 	unsigned long tex_coord_count;
 	unsigned long vert_normal_count;
 	vec3 *verts;
-	vec2 *vert_normal_coords;
+	vec3 *vert_normal_coords;
 	vec2 *tex_coords;
 };
 
